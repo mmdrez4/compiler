@@ -104,7 +104,44 @@ while True:
     # TODO complete this one
     elif current_state == State.COMMENT:
         if character == '*':
-            pass
+            lexeme += "*"
+            while True:
+                character = input_file.read(1)
+                if not character:
+                    errors_file.write("(" + lexeme[0:7] + "..., Unclosed comment) ")
+                    lexical_error = True
+                    go_to_start_node()
+                    break
+                lexeme += character
+                if character == "\n":
+                    pointer += 1
+                elif character == "*":
+                    character = input_file.read(1)
+                    lexeme += character
+                    if character == "/":
+                        go_to_start_node()
+                        break
+                    else:
+                        continue
+
+        elif character == '/':
+            lexeme += "/"
+            while True:
+                character = input_file.read(1)
+                if not character:
+                    go_to_start_node()
+                    break
+                lexeme += character
+                if character == "\n":
+                    pointer += 1
+                    go_to_start_node()
+                    break
+        else:
+            errors_file.write("(" + lexeme + ", Invalid input) ")
+            lexical_error = True
+            go_to_start_node()
+            can_read = False
+
         if re.match(comment_regex, character):
             pass
         else:
@@ -116,6 +153,16 @@ while True:
         if character == '/':
             lexeme += character
             current_state = State.COMMENT
+
+        elif character == '*':
+            lexeme += character
+            character = input_file.read(1)
+            if character == '/':
+                errors_file.write("(*/, Unmatched comment) ")
+            else:
+                errors_file.write("(" + lexeme + ", Invalid input) ")
+                can_read = False
+            continue
 
         elif re.match(num_regex, character):
             lexeme += character
