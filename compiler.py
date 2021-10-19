@@ -33,27 +33,51 @@ input_file = open('input.txt', 'r')
 current_state = State.START
 lexeme = ''
 can_read = True
+start_of_line = True
+lexical_error = False
 character = ''
+keywords = []
+identifiers = []
+
+
+def go_to_start_node():
+    global lexeme, current_state
+    lexeme = ''
+    current_state = State.START
+
+
 while True:
     if can_read:
         character = input_file.read(1)
     if not character:
+        # TODO i have some doubts about two lines below
+        if lexical_error:
+            errors_file.write('\n')
+        else:
+            errors_file.write("There is no lexical error.")
+        tokens_file.write('\n')
         break
     if character == "\n":
         pointer += 1
+        errors_file.write('\n')
+        tokens_file.write('\n')
         continue
 
-    # TODO if our example is 125d what should we do?
+    # TODO if our example is 125d what should we do? and set False to can_read
     if current_state == State.NUM:
         if re.match(num_regex, character):
             lexeme += character
         else:
-            lexeme += character
+            if re.match(r'[A-Za-z]', character):
+                lexeme += character
+                errors_file.write("(" + lexeme + " Invalid number) ")
+                lexical_error = True
+                go_to_start_node()
             if re.match(r'[0-9]+', character):
                 # error handling for 125d
                 errors_file.write("(" + lexeme + " Invalid number) ")
-                lexeme = ''
-                current_state = State.START
+                lexical_error = True
+                go_to_start_node()
     # TODO if our example is elseff what should we do?
     elif current_state == State.ID or current_state == State.KEYWORD:
         if re.match(ID_regex, character):
@@ -61,44 +85,52 @@ while True:
         else:
             current_state = State.START
             if re.match(keyword_regex, lexeme):
+                if lexeme not in keywords:
+                    keywords.append(lexeme)
                 tokens_file.write("(KEYWORD, " + lexeme + ") ")
             else:
+                if lexeme not in identifiers:
+                    identifiers.append(lexeme)
                 tokens_file.write("(ID, " + lexeme + ") ")
-            lexeme = ''
+            go_to_start_node()
             can_read = False
     elif current_state == State.SYMBOL:
         if character == '=':
             tokens_file.write("(SYMBOL, " + "==" + ") ")
-
         else:
             tokens_file.write("(SYMBOL, " + "=" + ") ")
+            can_read = False
+        go_to_start_node()
+    # TODO complete this one
     elif current_state == State.COMMENT:
+        if character == '*':
+            pass
         if re.match(comment_regex, character):
             pass
         else:
             lexeme += character
+
     # does'nt be in any state!
     else:
         can_read = True
-        if character == "*":
-            if len(lexeme) > 1:
-                pass
-        else:
-            if re.match(space_regex, character):
-                pass
-            else:
-                lexeme += character
+        if character == '/':
+            lexeme += character
+            current_state = State.COMMENT
 
-        if re.match(num_regex, i):
-            tokens_file.write("(NUM, " + i + ") ")
+        elif re.match(num_regex, character):
+            lexeme += character
+            current_state = State.NUM
+            # tokens_file.write("(NUM, " + character + ") ")
 
-        elif re.match(ID_regex, i):
-            tokens_file.write("(ID, " + i + ") ")
-            if i not in symbols_file.read():
-                symbols_file.write(i)
+        elif re.match(ID_regex, character):
+            lexeme += character
+            current_state = State.ID
+            # tokens_file.write("(ID, " + character + ") ")
+            # if i not in symbols_file.read():
+            #     symbols_file.write(character)
 
-        elif re.match(keyword_regex, i):
-            tokens_file.write("(KEYWORD, " + i + ") ")
+        # elif re.match(keyword_regex, character):
+        # tokens_file.write("(KEYWORD, " + character + ") ")
 
         elif re.match(symbol_regex, character):
             if character == '=':
@@ -106,9 +138,10 @@ while True:
             else:
                 tokens_file.write("(SYMBOL, " + character + ") ")
 
-        elif re.match(comment_regex, i):
+        elif re.match(space_regex, character):
             continue
         else:
+            lexical_error = True
             errors_file.write("(" + character + ", Invalid input) ")
 
         # elif re.match(r'[0-9]+'):
@@ -119,13 +152,10 @@ while True:
         #     errors_file.write("(/*, Unclosed comment) ")
         # else:
         #     errors_file.write("(" + i + ", Invalid input) ")
-
-    # elif re.match(ID_regex, i):
-    #     tokens_file.write("(KEYWORD, " + i + ") ")
-    #     pointer += 1
-
-
-pointer += 1
-errors_file.write('\n')
-tokens_file.write('\n')
-symbols_file.write('\n')
+j = 0
+for i, key in keywords:
+    symbols_file.write(str(i) + '.\t' + key)
+    j = i
+for identifier in identifiers:
+    j += 1
+    symbols_file.write(str(j) + '.\t' + identifier)
