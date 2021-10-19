@@ -15,16 +15,18 @@ class State(Enum):
 
 num_regex = re.compile(r'[0-9]+')
 ID_regex = re.compile(r'[A-Za-z][A-Za-z0-9]*')
-keyword_regex = re.compile(r'if|else|void|int|repeat|break|until|return')
-symbol_regex = re.compile(r';|:|,|[|]|(|)|{|}|/+/|-|/*/|=|<|==')
+keyword_regex = re.compile(r'if|else|void|int|repeat|break|until|return|main')
+symbol_regex = re.compile(r';|:|,|\[|]|\(|\)|\{|\}|/\+/|-|/\*/|=|<|==')
 comment_regex = re.compile(r'/\*.*\*/ | /\/\/[^\n\r]+?(?:\*\)|[\n\r])')
 space_regex = re.compile(r'\n|\r|\t|\v|\f')
+# is_valid = num_regex or ID_regex or keyword_regex or symbol_regex or space_regex
+is_valid = re.compile(r"[A-Za-z]|[0-9]|;|:|,|\[|\]|\(|\)|{|}|/\+/|-|/\*/|=|<|==|\n|\r|\t|\v|\f|\*|")
 
-symbols_file = open('symbol_table.txt', 'a')
+symbols_file = open('symbol_table.txt', 'w')
 tokens_file = open('tokens.txt', 'w')
 errors_file = open('lexical_errors.txt', 'w')
 
-symbols_file.writelines(["if", "\nelse", "\nvoid", "\nint", "\nrepeat", "\nbreak", "\nuntil", "\nreturn", "main\n"])
+# symbols_file.writelines(["if", "\nelse", "\nvoid", "\nint", "\nrepeat", "\nbreak", "\nuntil", "\nreturn", "main\n"])
 
 pointer = 1
 input_file = open('input.txt', 'r')
@@ -63,6 +65,16 @@ while True:
         tokens_file.write('\n')
         continue
 
+    # if re.match(r"[A-Za-z] | [0-9] | ;|:|,|[|]|(|)|{|}|/+/|-|/*/|=|<|== | \n|\r|\t|\v|\f", character):
+    if not re.match(is_valid, character):
+        print(character)
+        lexeme += character
+        go_to_start_node()
+        lexical_error = True
+        errors_file.write(str(pointer) + ".")
+        errors_file.write("(" + lexeme + ", Invalid input) ")
+        continue
+
     # TODO if our example is 125d what should we do? and set False to can_read
     if current_state == State.NUM:
         if re.match(num_regex, character):
@@ -70,14 +82,21 @@ while True:
         else:
             if re.match(r'[A-Za-z]', character):
                 lexeme += character
-                errors_file.write("(" + lexeme + " Invalid number) ")
+                errors_file.write(str(pointer) + ".")
+                errors_file.write("(" + lexeme + ", Invalid number) ")
                 lexical_error = True
                 go_to_start_node()
-            if re.match(r'[0-9]+', character):
-                # error handling for 125d
-                errors_file.write("(" + lexeme + " Invalid number) ")
-                lexical_error = True
+            else:
+                tokens_file.write(str(pointer) + ".")
+                tokens_file.write("(NUM, " + lexeme + ") ")
                 go_to_start_node()
+                can_read = False
+            # if re.match(r'[0-9]+', character):
+            #     # error handling for 125d
+            #     errors_file.write(str(pointer) + ".")
+            #     errors_file.write("(" + lexeme + " Invalid number) ")
+            #     lexical_error = True
+            #     go_to_start_node()
     # TODO if our example is elseff what should we do?
     elif current_state == State.ID or current_state == State.KEYWORD:
         if re.match(ID_regex, character):
@@ -87,17 +106,21 @@ while True:
             if re.match(keyword_regex, lexeme):
                 if lexeme not in keywords:
                     keywords.append(lexeme)
+                tokens_file.write(str(pointer) + ".")
                 tokens_file.write("(KEYWORD, " + lexeme + ") ")
             else:
                 if lexeme not in identifiers:
                     identifiers.append(lexeme)
+                tokens_file.write(str(pointer) + ".")
                 tokens_file.write("(ID, " + lexeme + ") ")
             go_to_start_node()
             can_read = False
     elif current_state == State.SYMBOL:
         if character == '=':
+            tokens_file.write(str(pointer) + ".")
             tokens_file.write("(SYMBOL, " + "==" + ") ")
         else:
+            tokens_file.write(str(pointer) + ".")
             tokens_file.write("(SYMBOL, " + "=" + ") ")
             can_read = False
         go_to_start_node()
@@ -108,6 +131,7 @@ while True:
             while True:
                 character = input_file.read(1)
                 if not character:
+                    errors_file.write(str(pointer) + ".")
                     errors_file.write("(" + lexeme[0:7] + "..., Unclosed comment) ")
                     lexical_error = True
                     go_to_start_node()
@@ -137,6 +161,7 @@ while True:
                     go_to_start_node()
                     break
         else:
+            errors_file.write(str(pointer) + ".")
             errors_file.write("(" + lexeme + ", Invalid input) ")
             lexical_error = True
             go_to_start_node()
@@ -158,8 +183,10 @@ while True:
             lexeme += character
             character = input_file.read(1)
             if character == '/':
+                errors_file.write(str(pointer) + ".")
                 errors_file.write("(*/, Unmatched comment) ")
             else:
+                errors_file.write(str(pointer) + ".")
                 errors_file.write("(" + lexeme + ", Invalid input) ")
                 can_read = False
             continue
@@ -183,12 +210,14 @@ while True:
             if character == '=':
                 current_state = State.SYMBOL
             else:
+                tokens_file.write(str(pointer) + ".")
                 tokens_file.write("(SYMBOL, " + character + ") ")
 
         elif re.match(space_regex, character):
             continue
         else:
             lexical_error = True
+            errors_file.write(str(pointer) + ".")
             errors_file.write("(" + character + ", Invalid input) ")
 
         # elif re.match(r'[0-9]+'):
@@ -200,9 +229,10 @@ while True:
         # else:
         #     errors_file.write("(" + i + ", Invalid input) ")
 j = 0
-for i, key in keywords:
-    symbols_file.write(str(i) + '.\t' + key)
-    j = i
+for i, key in enumerate(keywords):
+    print(i + 1)
+    symbols_file.write(str(i + 1) + '.\t' + key + "\n")
+    j = i + 1
 for identifier in identifiers:
     j += 1
-    symbols_file.write(str(j) + '.\t' + identifier)
+    symbols_file.write(str(j) + '.\t' + identifier + "\n")
