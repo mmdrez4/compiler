@@ -50,13 +50,10 @@ while True:
             pass
         else:
             lexeme += character
-    elif current_state == State.ID:
+    elif current_state == State.ID or current_state == State.KEYWORD:
         if re.match(ID_regex, character):
             pass
-        else:
-            lexeme += character
-    elif current_state == State.KEYWORD:
-        if re.match(keyword_regex, character):
+        elif re.match(keyword_regex, character):
             pass
         else:
             lexeme += character
