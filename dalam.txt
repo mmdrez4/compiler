@@ -68,20 +68,19 @@ def goal_state_with_star(token, final_lexeme):
 
 
 def tokenized():
-    if current_state != State.START:
-        numbering_tokens_lines()
-        if current_state == State.NUM:
-            tokens_file.write("(NUM, " + lexeme + ") ")
-        elif current_state == State.ID:
-            if re.match(keyword_regex, lexeme):
-                tokens_file.write("(KEYWORD, " + lexeme + ") ")
-            elif re.match(ID_regex, lexeme):
-                tokens_file.write("(ID, " + lexeme + ") ")
-                if lexeme not in identifiers:
-                    identifiers.append(lexeme)
-        elif current_state == State.SYMBOL:
-            tokens_file.write("(SYMBOL, " + lexeme + ") ")
-        go_to_start_node()
+    numbering_tokens_lines()
+    if current_state == State.NUM:
+        tokens_file.write("(NUM, " + lexeme + ") ")
+    elif current_state == State.ID:
+        if re.match(keyword_regex, lexeme):
+            tokens_file.write("(KEYWORD, " + lexeme + ") ")
+        elif re.match(ID_regex, lexeme):
+            tokens_file.write("(ID, " + lexeme + ") ")
+            if lexeme not in identifiers:
+                identifiers.append(lexeme)
+    elif current_state == State.SYMBOL:
+        tokens_file.write("(SYMBOL, " + lexeme + ") ")
+    go_to_start_node()
 
 
 def error_handling(type, final_lexeme, line_pointer):
@@ -113,14 +112,13 @@ while True:
             errors_file.write('\n')
         else:
             errors_file.write("There is no lexical error.")
-        print("hello")
-        tokenized()
         tokens_file.write('\n')
         break
     if character == "\n":
-        if lexeme == '/':
-            error_handling("input", lexeme, pointer)
-        tokenized()
+        if lexeme != '':
+            tokenized()
+        # elif lexeme == "/":
+        #     error_handling("input", lexeme, pointer)
         pointer += 1
         continue
 
@@ -129,7 +127,12 @@ while True:
         can_read = True
         if character == '/':
             lexeme += character
-            current_state = State.COMMENT
+            character = input_file.read(1)
+            if character == '/' or character == "*":
+                current_state = State.COMMENT
+                can_read = False
+            else:
+                error_handling("input", lexeme, pointer)
 
         elif character == '*':
             lexeme += character
@@ -141,8 +144,8 @@ while True:
                 current_state = State.SYMBOL
                 tokenized()
             else:
-                lexeme += character
                 error_handling("input", lexeme, pointer)
+                can_read = False
             continue
 
         elif re.match(num_regex, character):
@@ -170,17 +173,15 @@ while True:
     #TODO does'nt be in the start state!
     else:
         if re.match(space_regex, character):
-            if lexeme == '/':
-                error_handling("input", lexeme, pointer)
-            else:
-                tokenized()
+            # if lexeme == "/":
+            #     error_handling("input", lexeme, pointer)
+            # else:
+            tokenized()
         else:
             # TODO NUM:
             #  if our example is 125d what should we do? and set False to can_read
             if current_state == State.NUM:
                 if re.match(num_regex, character):
-                    if lexeme == "194":
-                        print(lexeme)
                     lexeme += character
                 else:
                     if is_char_valid(character):
@@ -233,6 +234,7 @@ while True:
             elif current_state == State.COMMENT:
                 comment_pointer = 0
                 if character == '*':
+                    can_read = True
                     comment_pointer = pointer
                     lexeme += "*"
                     while True:
@@ -253,6 +255,7 @@ while True:
                                 continue
 
                 elif character == '/':
+                    can_read = True
                     lexeme += "/"
                     while True:
                         character = input_file.read(1)
