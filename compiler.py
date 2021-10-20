@@ -18,9 +18,9 @@ ID_regex = re.compile(r'[A-Za-z][A-Za-z0-9]*')
 keyword_regex = re.compile(r'if|else|void|int|repeat|break|until|return|main')
 symbol_regex = re.compile(r';|:|,|\[|]|\(|\)|\{|\}|/\+/|-|/\*/|=|<|==')
 comment_regex = re.compile(r'/\*.*\*/ | /\/\/[^\n\r]+?(?:\*\)|[\n\r])')
-space_regex = re.compile(r'\n|\r|\t|\v|\f')
+space_regex = re.compile(r'\n|\r|\t|\v|\f|\s')
 # is_valid = num_regex or ID_regex or keyword_regex or symbol_regex or space_regex
-is_valid = re.compile(r"[A-Za-z]|[0-9]|;|:|,|\[|\]|\(|\)|{|}|/\+/|-|/\*/|=|<|==|\n|\r|\t|\v|\f|\*|")
+is_valid = re.compile(r"[A-Za-z]|[0-9]|;|:|,|\[|\]|\(|\)|{|}|\+|-|\*|=|<|==|/|\n|\r|\t|\v|\f|\s")
 
 symbols_file = open('symbol_table.txt', 'w')
 tokens_file = open('tokens.txt', 'w')
@@ -48,6 +48,18 @@ def go_to_start_node():
     current_state = State.START
 
 
+def is_char_valid(c):
+    return re.match(is_valid, c)
+
+
+def goal_state(token, final_lexeme):
+    global can_read
+    tokens_file.write(str(pointer) + ".")
+    tokens_file.write("(" + token + ", " + final_lexeme + ") ")
+    go_to_start_node()
+    can_read = False
+
+
 while True:
     if can_read:
         character = input_file.read(1)
@@ -66,31 +78,99 @@ while True:
         continue
 
     # if re.match(r"[A-Za-z] | [0-9] | ;|:|,|[|]|(|)|{|}|/+/|-|/*/|=|<|== | \n|\r|\t|\v|\f", character):
-    if not re.match(is_valid, character):
-        print(character)
-        lexeme += character
-        go_to_start_node()
-        lexical_error = True
-        errors_file.write(str(pointer) + ".")
-        errors_file.write("(" + lexeme + ", Invalid input) ")
-        continue
+    # if not re.match(is_valid, character):
+    #     print(character)
+    #     lexeme += character
+    #     go_to_start_node()
+    #     lexical_error = True
+    #     errors_file.write(str(pointer) + ".")
+    #     errors_file.write("(" + lexeme + ", Invalid input) ")
+    #     continue
+    if current_state == State.START:
+        can_read = True
+        if character == '/':
+            lexeme += character
+            current_state = State.COMMENT
+
+        elif character == '*':
+            lexeme += character
+            character = input_file.read(1)
+            if character == '/':
+                errors_file.write(str(pointer) + ".")
+                errors_file.write("(*/, Unmatched comment) ")
+            else:
+                errors_file.write(str(pointer) + ".")
+                errors_file.write("(" + lexeme + ", Invalid input) ")
+                can_read = False
+            continue
+
+        elif re.match(num_regex, character):
+            lexeme += character
+            current_state = State.NUM
+            # tokens_file.write("(NUM, " + character + ") ")
+
+        elif re.match(ID_regex, character):
+            lexeme += character
+            current_state = State.ID
+            # tokens_file.write("(ID, " + character + ") ")
+            # if i not in symbols_file.read():
+            #     symbols_file.write(character)
+
+        # elif re.match(keyword_regex, character):
+        # tokens_file.write("(KEYWORD, " + character + ") ")
+
+        elif re.match(symbol_regex, character):
+            if character == '=':
+                current_state = State.SYMBOL
+            else:
+                tokens_file.write(str(pointer) + ".")
+                tokens_file.write("(SYMBOL, " + character + ") ")
+
+        elif re.match(space_regex, character):
+            continue
+        else:
+            lexical_error = True
+            errors_file.write(str(pointer) + ".")
+            errors_file.write("(" + character + ", Invalid input) ")
+
+        # elif re.match(r'[0-9]+'):
+        #     errors_file.write("(" + i + " Invalid number) ")
+        # elif i.__eq__("*/"):
+        #     errors_file.write("(*/, Unmatched comment) ")
+        # elif i.startswith("/*"):
+        #     errors_file.write("(/*, Unclosed comment) ")
+        # else:
+        #     errors_file.write("(" + i + ", Invalid input) ")
 
     # TODO if our example is 125d what should we do? and set False to can_read
     if current_state == State.NUM:
         if re.match(num_regex, character):
             lexeme += character
         else:
-            if re.match(r'[A-Za-z]', character):
+            if is_char_valid(character):
+                if re.match(space_regex, character):
+                    tokens_file.write(str(pointer) + ".")
+                    tokens_file.write("(NUM, " + lexeme + ") ")
+                    go_to_start_node()
+                elif re.match(r'[A-Za-z]', character):
+                    lexeme += character
+                    errors_file.write(str(pointer) + ".")
+                    errors_file.write("(" + lexeme + ", Invalid number) ")
+                    lexical_error = True
+                    go_to_start_node()
+                else:
+                    # tokens_file.write(str(pointer) + ".")
+                    # tokens_file.write("(NUM, " + lexeme + ") ")
+                    # go_to_start_node()
+                    # can_read = False
+                    goal_state("NUM", lexeme)
+            else:
                 lexeme += character
                 errors_file.write(str(pointer) + ".")
                 errors_file.write("(" + lexeme + ", Invalid number) ")
                 lexical_error = True
                 go_to_start_node()
-            else:
-                tokens_file.write(str(pointer) + ".")
-                tokens_file.write("(NUM, " + lexeme + ") ")
-                go_to_start_node()
-                can_read = False
+
             # if re.match(r'[0-9]+', character):
             #     # error handling for 125d
             #     errors_file.write(str(pointer) + ".")
@@ -174,60 +254,7 @@ while True:
 
     # does'nt be in any state!
     else:
-        can_read = True
-        if character == '/':
-            lexeme += character
-            current_state = State.COMMENT
 
-        elif character == '*':
-            lexeme += character
-            character = input_file.read(1)
-            if character == '/':
-                errors_file.write(str(pointer) + ".")
-                errors_file.write("(*/, Unmatched comment) ")
-            else:
-                errors_file.write(str(pointer) + ".")
-                errors_file.write("(" + lexeme + ", Invalid input) ")
-                can_read = False
-            continue
-
-        elif re.match(num_regex, character):
-            lexeme += character
-            current_state = State.NUM
-            # tokens_file.write("(NUM, " + character + ") ")
-
-        elif re.match(ID_regex, character):
-            lexeme += character
-            current_state = State.ID
-            # tokens_file.write("(ID, " + character + ") ")
-            # if i not in symbols_file.read():
-            #     symbols_file.write(character)
-
-        # elif re.match(keyword_regex, character):
-        # tokens_file.write("(KEYWORD, " + character + ") ")
-
-        elif re.match(symbol_regex, character):
-            if character == '=':
-                current_state = State.SYMBOL
-            else:
-                tokens_file.write(str(pointer) + ".")
-                tokens_file.write("(SYMBOL, " + character + ") ")
-
-        elif re.match(space_regex, character):
-            continue
-        else:
-            lexical_error = True
-            errors_file.write(str(pointer) + ".")
-            errors_file.write("(" + character + ", Invalid input) ")
-
-        # elif re.match(r'[0-9]+'):
-        #     errors_file.write("(" + i + " Invalid number) ")
-        # elif i.__eq__("*/"):
-        #     errors_file.write("(*/, Unmatched comment) ")
-        # elif i.startswith("/*"):
-        #     errors_file.write("(/*, Unclosed comment) ")
-        # else:
-        #     errors_file.write("(" + i + ", Invalid input) ")
 j = 0
 for i, key in enumerate(keywords):
     print(i + 1)
