@@ -2,6 +2,7 @@ import re
 from enum import Enum, unique
 
 
+# ENUM FOR ALL THE STATES
 @unique
 class State(Enum):
     START = 1
@@ -13,6 +14,7 @@ class State(Enum):
     WHITESPACE = 7
 
 
+# DEFINE REGEX FOR EACH STATE
 num_regex = re.compile(r'[0-9]+')
 ID_regex = re.compile(r'[A-Za-z][A-Za-z0-9]*')
 keyword_regex = re.compile(r'if|else|void|int|repeat|break|until|return')
@@ -21,13 +23,16 @@ comment_regex = re.compile(r'/\*.*\*/ | ///[^\n\r]+?(?:\*\)|[\n\r])')
 space_regex = re.compile(r'\n|\r|\t|\v|\f|\s')
 is_valid = re.compile(r"[A-Za-z]|[0-9]|;|:|,|\[|\]|\(|\)|{|}|\+|-|\*|=|<|==|/|\n|\r|\t|\v|\f|\s")
 
+# CREATING FILES
 symbols_file = open('symbol_table.txt', 'w')
 tokens_file = open('tokens.txt', 'w')
 errors_file = open('lexical_errors.txt', 'w')
 
+# OPEN THE INPUT FILE AND INITIALIZE THE POINTER OF LINES
 pointer = 1
 input_file = open('input.txt', 'r')
 
+# DEFINE IMPORTANT VARIABLES
 current_state = State.START
 lexeme = ''
 can_read = True
@@ -39,16 +44,19 @@ character = ''
 identifiers = []
 
 
+# GO BACK TO THE START STATE
 def go_to_start_node():
     global lexeme, current_state
     lexeme = ''
     current_state = State.START
 
 
+# CHECK IF OUR CHARACTER IS VALID(THE CHARACTER SHOULD BE ACCEPTED BY ANY THE DEFINED REGEXES)
 def is_char_valid(c):
     return re.match(is_valid, c)
 
 
+# ADD NUMBER OF LINE IN FILES
 def numbering_tokens_lines():
     global tokens_file_pointer
     if pointer != tokens_file_pointer:
@@ -59,6 +67,8 @@ def numbering_tokens_lines():
         tokens_file_pointer = pointer
 
 
+# USED WHEN WE REACH THE FINAL STATE BUT WE SHOULD READ THE LAST CHARACTER AGAIN
+# BECAUSE IT HAD'NT BEEN USED IN OUR  TOKEN
 def goal_state_with_star(token, final_lexeme):
     numbering_tokens_lines()
     global can_read
@@ -67,7 +77,8 @@ def goal_state_with_star(token, final_lexeme):
     can_read = False
 
 
-def tokenized():
+# WRITE TOKENS IN THE TOKENS_FILE
+def tokenize():
     if current_state != State.START:
         numbering_tokens_lines()
         if current_state == State.NUM:
@@ -84,6 +95,7 @@ def tokenized():
         go_to_start_node()
 
 
+# WRITE ERRORS SUCH AS INVALID INPUT AND NUMBER AND COMMENTING PROBLEMS IN ERRORS_FILE
 def error_handling(type, final_lexeme, line_pointer):
     global lexical_error, lexical_error_pointer
     lexical_error = True
@@ -104,26 +116,11 @@ def error_handling(type, final_lexeme, line_pointer):
     go_to_start_node()
 
 
-while True:
-    if can_read:
-        character = input_file.read(1)
-    if not character:
-        # TODO i have some doubts about two lines below
-        if lexical_error:
-            errors_file.write('\n')
-        else:
-            errors_file.write("There is no lexical error.")
-        print("hello")
-        tokenized()
-        tokens_file.write('\n')
-        break
-    if character == "\n":
-        if lexeme == '/':
-            error_handling("input", lexeme, pointer)
-        tokenized()
-        pointer += 1
-        continue
+# GET TOKENS!!
+def get_next_token():
+    global character, current_state, can_read, lexeme, pointer
 
+    # WE ARE IN THE START STATE
     if current_state == State.START:
         lexeme = ''
         can_read = True
@@ -139,11 +136,11 @@ while True:
             elif re.match(space_regex, character):
                 lexeme = "*"
                 current_state = State.SYMBOL
-                tokenized()
+                tokenize()
             else:
                 lexeme += character
                 error_handling("input", lexeme, pointer)
-            continue
+            return
 
         elif re.match(num_regex, character):
             lexeme += character
@@ -159,28 +156,26 @@ while True:
                 lexeme += character
             else:
                 lexeme = character
-                tokenized()
+                tokenize()
 
         elif re.match(space_regex, character):
-            continue
+            return
         else:
             error_handling("input", character, pointer)
 
-
-    #TODO does'nt be in the start state!
+    # WE ARE NOT IN THE START STATE
     else:
         if re.match(space_regex, character):
             if lexeme == '/':
                 error_handling("input", lexeme, pointer)
             else:
-                tokenized()
+                tokenize()
         else:
-            # TODO NUM:
-            #  if our example is 125d what should we do? and set False to can_read
+
+            # 1
+            # NUM STATE:
             if current_state == State.NUM:
                 if re.match(num_regex, character):
-                    if lexeme == "194":
-                        print(lexeme)
                     lexeme += character
                 else:
                     if is_char_valid(character):
@@ -193,10 +188,8 @@ while True:
                         lexeme += character
                         error_handling("number", lexeme, pointer)
 
-
-
-            # TODO ID AND KEYWORD:
-            #  if our example is elseff what should we do?
+            # 2
+            # ID AND KEYWORD STATE:
             elif current_state == State.ID:
                 if re.match("[A-Za-z0-9]", character):
                     lexeme += character
@@ -212,24 +205,22 @@ while True:
                         lexeme += character
                         error_handling("input", lexeme, pointer)
 
-
-            # TODO SYMBOL
+            # 3
+            # SYMBOL STATE
             elif current_state == State.SYMBOL:
                 if is_char_valid(character):
                     if character == '=':
                         lexeme = "=="
-                        tokenized()
+                        tokenize()
                     else:
-                        # TODO what if we have =* and then space?
                         lexeme = "="
                         goal_state_with_star("SYMBOL", lexeme)
                 else:
                     lexeme += character
                     error_handling("input", lexeme, pointer)
 
-
-            # TODO COMMENT:
-            #  complete this one
+            # 4
+            # COMMENT STATE
             elif current_state == State.COMMENT:
                 comment_pointer = 0
                 if character == '*':
@@ -268,10 +259,34 @@ while True:
                     error_handling("input", lexeme, pointer)
                     can_read = False
 
-symbols_file.writelines(["1.\tif", "\n2.\telse", "\n3.\tvoid", "\n4.\tint", "\n5.\trepeat",
-                         "\n6.\tbreak", "\n7.\tuntil", "\n8.\treturn\n"])
 
-j = 9
-for identifier in identifiers:
-    symbols_file.write(str(j) + '.\t' + identifier + "\n")
-    j += 1
+# MAIN FUNCTION
+if __name__ == "__main__":
+    # WHILE LOOP FOR READING THE FILE CHARACTER BY CHARACTER
+    while True:
+        if can_read:
+            character = input_file.read(1)
+        if not character:
+            if lexical_error:
+                errors_file.write('\n')
+            else:
+                errors_file.write("There is no lexical error.")
+            tokenize()
+            tokens_file.write('\n')
+            break
+        if character == "\n":
+            if lexeme == '/':
+                error_handling("input", lexeme, pointer)
+            tokenize()
+            pointer += 1
+            continue
+        # call get_next_token method for recognizing all the tokens
+        token_type , token_string = get_next_token()
+
+    # WRITE SYMBOLS NAMES IN THE SYMBOL_FILE AND ADD IDENTIFIERS TO THAT
+    symbols_file.writelines(["1.\tif", "\n2.\telse", "\n3.\tvoid", "\n4.\tint", "\n5.\trepeat",
+                             "\n6.\tbreak", "\n7.\tuntil", "\n8.\treturn\n"])
+    j = 9
+    for identifier in identifiers:
+        symbols_file.write(str(j) + '.\t' + identifier + "\n")
+        j += 1
