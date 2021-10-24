@@ -56,7 +56,7 @@ def is_char_valid(c):
     return re.match(is_valid, c)
 
 
-# ADD NUMBER OF LINE IN FILES
+# ADD NUMBER OF A LINE IN FILES
 def numbering_tokens_lines():
     global tokens_file_pointer
     if pointer != tokens_file_pointer:
@@ -67,32 +67,30 @@ def numbering_tokens_lines():
         tokens_file_pointer = pointer
 
 
-# USED WHEN WE REACH THE FINAL STATE BUT WE SHOULD READ THE LAST CHARACTER AGAIN
-# BECAUSE IT HAD'NT BEEN USED IN OUR  TOKEN
-def goal_state_with_star(token, final_lexeme):
+# ADDING TOKEN TO TOKENS.TXT
+def add_tokens_to_file(token, final_lexeme):
     numbering_tokens_lines()
-    global can_read
     tokens_file.write("(" + token + ", " + final_lexeme + ") ")
     go_to_start_node()
-    can_read = False
 
 
 # WRITE TOKENS IN THE TOKENS_FILE
-def tokenize():
+def get_token_name():
     if current_state != State.START:
         numbering_tokens_lines()
         if current_state == State.NUM:
-            tokens_file.write("(NUM, " + lexeme + ") ")
+            return "NUM"
         elif current_state == State.ID:
             if re.match(keyword_regex, lexeme):
-                tokens_file.write("(KEYWORD, " + lexeme + ") ")
+                return "KEYWORD"
             elif re.match(ID_regex, lexeme):
-                tokens_file.write("(ID, " + lexeme + ") ")
                 if lexeme not in identifiers:
                     identifiers.append(lexeme)
+                return "ID"
         elif current_state == State.SYMBOL:
-            tokens_file.write("(SYMBOL, " + lexeme + ") ")
-        go_to_start_node()
+            return "SYMBOL"
+    else:
+        return "START"
 
 
 # WRITE ERRORS SUCH AS INVALID INPUT AND NUMBER AND COMMENTING PROBLEMS IN ERRORS_FILE
@@ -120,6 +118,19 @@ def error_handling(type, final_lexeme, line_pointer):
 def get_next_token():
     global character, current_state, can_read, lexeme, pointer
 
+    if not character:
+        if lexical_error:
+            errors_file.write('\n')
+        else:
+            errors_file.write("There is no lexical error.")
+        get_token_name()
+        return get_token_name(), lexeme
+
+    if character == "\n":
+        if lexeme == '/':
+            error_handling("input", lexeme, pointer)
+        return get_token_name(), lexeme
+
     # WE ARE IN THE START STATE
     if current_state == State.START:
         lexeme = ''
@@ -136,7 +147,7 @@ def get_next_token():
             elif re.match(space_regex, character):
                 lexeme = "*"
                 current_state = State.SYMBOL
-                tokenize()
+                return "SYMBOL", lexeme
             else:
                 lexeme += character
                 error_handling("input", lexeme, pointer)
@@ -156,7 +167,7 @@ def get_next_token():
                 lexeme += character
             else:
                 lexeme = character
-                tokenize()
+                return "SYMBOL", lexeme
 
         elif re.match(space_regex, character):
             return
@@ -169,7 +180,7 @@ def get_next_token():
             if lexeme == '/':
                 error_handling("input", lexeme, pointer)
             else:
-                tokenize()
+                return get_token_name(), lexeme
         else:
 
             # 1
@@ -183,7 +194,8 @@ def get_next_token():
                             lexeme += character
                             error_handling("number", lexeme, pointer)
                         else:
-                            goal_state_with_star("NUM", lexeme)
+                            can_read = False
+                            return "NUM", lexeme
                     else:
                         lexeme += character
                         error_handling("number", lexeme, pointer)
@@ -196,11 +208,13 @@ def get_next_token():
                 else:
                     if is_char_valid(character):
                         if re.match(keyword_regex, lexeme):
-                            goal_state_with_star("KEYWORD", lexeme)
+                            can_read = False
+                            return "KEYWORD", lexeme
                         else:
                             if lexeme not in identifiers:
                                 identifiers.append(lexeme)
-                            goal_state_with_star("ID", lexeme)
+                            can_read = False
+                            return "ID", lexeme
                     else:
                         lexeme += character
                         error_handling("input", lexeme, pointer)
@@ -211,10 +225,11 @@ def get_next_token():
                 if is_char_valid(character):
                     if character == '=':
                         lexeme = "=="
-                        tokenize()
+                        return "SYMBOL", lexeme
                     else:
                         lexeme = "="
-                        goal_state_with_star("SYMBOL", lexeme)
+                        can_read = False
+                        return "SYMBOL", lexeme
                 else:
                     lexeme += character
                     error_handling("input", lexeme, pointer)
@@ -256,33 +271,44 @@ def get_next_token():
                             go_to_start_node()
                             break
                 else:
+                    if is_char_valid(character):
+                        can_read = False
+                    else:
+                        lexeme += character
                     error_handling("input", lexeme, pointer)
-                    can_read = False
 
 
 # MAIN FUNCTION
 if __name__ == "__main__":
+
     # WHILE LOOP FOR READING THE FILE CHARACTER BY CHARACTER
     while True:
         if can_read:
             character = input_file.read(1)
+
+        # LAST UPDATE FOR TOKENS WHEN THERE IS NO CHARACTER ANYMORE
         if not character:
-            if lexical_error:
-                errors_file.write('\n')
-            else:
-                errors_file.write("There is no lexical error.")
-            tokenize()
-            tokens_file.write('\n')
+            (token_type, token_lexeme) = get_next_token()
+            if token_type != "START":
+                add_tokens_to_file(token_type, token_lexeme)
             break
+
+        # GO TO NEWLINE AND UPDATE THE LAST TOKEN
         if character == "\n":
-            if lexeme == '/':
-                error_handling("input", lexeme, pointer)
-            tokenize()
+            (token_type, token_lexeme) = get_next_token()
+            if token_type != "START":
+                add_tokens_to_file(token_type, token_lexeme)
             pointer += 1
             continue
-        # call get_next_token method for recognizing all the tokens
-        token_type , token_string = get_next_token()
 
+        # CALL get_next_token METHOD FOR RECOGNIZING ALL THE TOKENS
+        output = get_next_token()
+        if output is not None:
+            (token_type, token_lexeme) = output[0], output[1]
+            if len(token_type) > 0 and len(token_lexeme) > 0:
+                add_tokens_to_file(token_type, token_lexeme)
+
+    tokens_file.write('\n')
     # WRITE SYMBOLS NAMES IN THE SYMBOL_FILE AND ADD IDENTIFIERS TO THAT
     symbols_file.writelines(["1.\tif", "\n2.\telse", "\n3.\tvoid", "\n4.\tint", "\n5.\trepeat",
                              "\n6.\tbreak", "\n7.\tuntil", "\n8.\treturn\n"])
