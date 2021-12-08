@@ -54,56 +54,54 @@ class State(Enum):
     Arg_list = 47
     Arg_list_prime = 48
 
+
 first_of_non_terminals = {
-    "Program"                       : "int",
-    "Declaration-list"              : "int",
-    "Declaration"                   : "int",
-    "Declaration-initial"           : "int",
-    "Declaration-prime"             : ";",
-    "Var-declaration-prime"         : ";",
-    "Fun-declaration-prime"         : "(void) {int ID;}",
-    "Type-specifier"                : "int",
-    "Params"                        : "void",
-    "Param-list"                    : ", int ID",
-    "Param"                         : "int ID",
-    "Param-prime"                   : "[]",
-    "Compound-stmt"                 : "{int ID;}",
-    "Statement-list"                : ";",
-    "Statement"                     : ";",
-    "Expression-stmt"               : ";",
-    "Selection-stmt"                : "if (NUM); else;",
-    "Else-stmt"                     : "if (NUM); else;",
-    "Iteration-stmt"                : "while (NUM);",
-    "Return-stmt"                   : "return;",
-    "Return-stmt-prime"             : ";",
-    "Expression"                    : ";",
-    "B"                             : r'=|[',
-    "H"                             : "NUM",
-    "Simple-expression-zegond"      : "NUM",
-    "Simple-expression-prime"       : "()",
-    "C"                             : "< NUM",
-    "Relop"                         : "<",
-    "Additive-expression"           : "NUM",
-    "Additive-expression-prime"     : "()",
-    "Additive-expression-zegond"    : "NUM",
-    "D"                             : "+ NUM",
-    "Addop"                         : "+",
-    "Term"                          : "NUM",
-    "Term-prime"                    : "()",
-    "Term-zegond"                   : "NUM",
-    "G"                             : "* NUM",
-    "Factor"                        : "NUM",
-    "Var-call-prime"                : "()",
-    "Var-prime"                     : "[NUM]",
-    "Factor-prime"                  : "()",
-    "Factor-zegond"                 : "NUM",
-    "Args"                          : "NUM",
-    "Arg-list"                      : "NUM",
-    "Arg-list-prime"                : ", NUM",
+    "Program": "int",
+    "Declaration-list": "int",
+    "Declaration": "int",
+    "Declaration-initial": "int",
+    "Declaration-prime": ";",
+    "Var-declaration-prime": ";",
+    "Fun-declaration-prime": "(void) {int ID;}",
+    "Type-specifier": "int",
+    "Params": "void",
+    "Param-list": ", int ID",
+    "Param": "int ID",
+    "Param-prime": "[]",
+    "Compound-stmt": "{int ID;}",
+    "Statement-list": ";",
+    "Statement": ";",
+    "Expression-stmt": ";",
+    "Selection-stmt": "if (NUM); else;",
+    "Else-stmt": "if (NUM); else;",
+    "Iteration-stmt": "while (NUM);",
+    "Return-stmt": "return;",
+    "Return-stmt-prime": ";",
+    "Expression": ";",
+    "B": r'=|[',
+    "H": "NUM",
+    "Simple-expression-zegond": "NUM",
+    "Simple-expression-prime": "()",
+    "C": "< NUM",
+    "Relop": "<",
+    "Additive-expression": "NUM",
+    "Additive-expression-prime": "()",
+    "Additive-expression-zegond": "NUM",
+    "D": "+ NUM",
+    "Addop": "+",
+    "Term": "NUM",
+    "Term-prime": "()",
+    "Term-zegond": "NUM",
+    "G": "* NUM",
+    "Factor": "NUM",
+    "Var-call-prime": "()",
+    "Var-prime": "[NUM]",
+    "Factor-prime": "()",
+    "Factor-zegond": "NUM",
+    "Args": "NUM",
+    "Arg-list": "NUM",
+    "Arg-list-prime": ", NUM",
 }
-
-
-for i in first_of_non_terminals.keys():
 
 
 class Parser(object):
@@ -112,7 +110,6 @@ class Parser(object):
 
     def parser(self, token):
         if token == "int":
-
-        elif token ==
-
-
+            pass
+        for i in first_of_non_terminals.keys():
+            pass
