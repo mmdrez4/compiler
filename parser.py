@@ -103,6 +103,8 @@ first_of_non_terminals = {
 }
 
 
+for i in first_of_non_terminals.keys():
+
 
 class Parser(object):
     def __init__(self, next_token):
