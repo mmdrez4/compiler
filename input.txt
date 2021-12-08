@@ -1,17 +1,30 @@
-void main ( void ) {
-    int a = 0;
-    // comment1
-    a = 2 + 2;
-    a = a - 3;
-    cde = a;
-    if (b /* comment2 */ == 3d) {
-        a = 3;
-        cd!e = 7;
+int main()
+{
+    printf(252);
+    
+    int year;
+
+    printf(year);
+    scanf(year);
+
+    if (a % 2) {
+	print( * _ * )
     }
-    else */
-    {
-        b = a < cde;
-        {cde = @2;
-    }}
-    return;/* comment 3
+    // divisible by 4, 100 and 400
+    if (year > 400 == 0)
+        printf(year+1);
+    switch (a) {
+	case 5:
+		a = a*2;
+	case 7:
+		b = b*2;
+    }
+    while (a > 0) {
+	a = a - 1;
+    }
+    // by100nddntivisibleby400 */
+    repeat {
+	2 * 2 + * 2;
+    } until (a < 2)
+
 }

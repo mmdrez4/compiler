@@ -7,7 +7,12 @@
 7.	until
 8.	return
 9.	main
-10.	a
-11.	cde
-12.	b
-13.	e
+10.	printf
+11.	year
+12.	scanf
+13.	a
+14.	print
+15.	switch
+16.	case
+17.	b
+18.	while

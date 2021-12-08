@@ -148,6 +148,10 @@ def get_next_token():
                 lexeme = "*"
                 current_state = State.SYMBOL
                 return "SYMBOL", lexeme
+            elif re.match(num_regex, character):
+                current_state = State.START
+                can_read = False
+                return "SYMBOL", lexeme
             else:
                 lexeme += character
                 error_handling("input", lexeme, pointer)
@@ -316,3 +320,5 @@ if __name__ == "__main__":
     for identifier in identifiers:
         symbols_file.write(str(j) + '.\t' + identifier + "\n")
         j += 1
+
+
