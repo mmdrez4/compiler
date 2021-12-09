@@ -57,7 +57,7 @@ class Transition(Enum):
 
 
 first_of_non_terminals = {
-    "Program": "int",
+    "Program": ["int"],
     "Declaration-list": "int",
     "Declaration": "int",
     "Declaration-initial": "int",
@@ -105,7 +105,7 @@ first_of_non_terminals = {
 }
 
 follow_of_non_terminals = {
-    "Program": "int",
+    "Program": ["int"],
     "Declaration-list": "int",
     "Declaration": "int",
     "Declaration-initial": "int",
@@ -294,19 +294,23 @@ current_num = 0
 def parser(token):
     global current_state, current_num
     token_type, lexeme = token
-    if current_state == Transition.Program:
-        if token_type in first_of_non_terminals["Declaration-list"]:
-            current_state = Transition.Declaration_list
 
-        elif token_type in follow_of_non_terminals["Declaration-list"]:
-            pass
-        else:
-            pass
+    if current_state == Transition.Program:
+        if current_num == 0:
+            if token_type in first_of_non_terminals["Declaration-list"]:
+                current_state = Transition.Declaration_list
+            elif token_type in follow_of_non_terminals["Declaration-list"]:
+                pass
+            else:
+                pass
+
     elif current_state == Transition.Declaration_list:
         if current_num == 0:
             if token_type in first_of_non_terminals["Declaration"]:
                 pass
             elif token_type in follow_of_non_terminals["Declaration"]:
+                pass
+            elif token_type in follow_of_non_terminals["Declaration-list"]:
                 pass
             else:
                 pass
@@ -482,12 +486,108 @@ def parser(token):
             else:
                 pass
         elif current_num == 1:
-            if token_type in first_of_non_terminals["Param-list"]:
+            if token_type in first_of_non_terminals["Param-prime"]:
                 pass
-            elif token_type in follow_of_non_terminals["Param-list"]:
+            elif token_type in follow_of_non_terminals["Param-prime"]:
                 pass
             else:
                 pass
+
+    elif current_state == Transition.Param_prime:
+        if current_state == 0:
+            if lexeme == "[":
+                pass
+            elif token_type in follow_of_non_terminals["Param-prime"]:
+                pass
+            else:
+                pass
+        if current_state == 1:
+            if lexeme == "]":
+                pass
+            else:
+                pass
+
+    elif current_state == Transition.Compound_stmt:
+        if current_num == 0:
+            if lexeme == "{":
+                pass
+            else:
+                pass
+        elif current_num == 1:
+            if token_type in first_of_non_terminals["Declaration-list"]:
+                pass
+            elif token_type in follow_of_non_terminals["Declaration-list"]:
+                pass
+            else:
+                pass
+        elif current_num == 2:
+            if token_type in first_of_non_terminals["Statement-list"]:
+                pass
+            elif token_type in follow_of_non_terminals["Statement-list"]:
+                pass
+            else:
+                pass
+        elif current_num == 3:
+            if lexeme == "}":
+                pass
+            else:
+                pass
+
+    elif current_state == Transition.Statement_list:
+        if current_num == 0:
+            if token_type in first_of_non_terminals["Statement"]:
+                pass
+            elif token_type in follow_of_non_terminals["Statement"]:
+                pass
+            elif token_type in follow_of_non_terminals["Statement-list"]:
+                pass
+            else:
+                pass
+        elif current_num == 1:
+            if token_type in follow_of_non_terminals["Statement-list"]:
+                pass
+            elif token_type in follow_of_non_terminals["Statement-list"]:
+                pass
+            else:
+                pass
+
+    elif current_state == Transition.Statement:
+        if current_num == 0:
+            if token_type in first_of_non_terminals["Expression-stmt"]:
+                pass
+            elif token_type in follow_of_non_terminals["Expression-stmt"]:
+                pass
+            else:
+                pass
+        elif current_num == 1:
+            if token_type in follow_of_non_terminals["Compound-stmt"]:
+                pass
+            elif token_type in follow_of_non_terminals["Compound-stmt"]:
+                pass
+            else:
+                pass
+        elif current_num == 2:
+            if token_type in follow_of_non_terminals["Selection-stmt"]:
+                pass
+            elif token_type in follow_of_non_terminals["Selection-stmt"]:
+                pass
+            else:
+                pass
+        elif current_num == 3:
+            if token_type in follow_of_non_terminals["Iteration-stmt"]:
+                pass
+            elif token_type in follow_of_non_terminals["Iteration-stmt"]:
+                pass
+            else:
+                pass
+        elif current_num == 4:
+            if token_type in follow_of_non_terminals["Return-stmt"]:
+                pass
+            elif token_type in follow_of_non_terminals["Return-stmt"]:
+                pass
+            else:
+                pass
+
 
 
 if __name__ == "__main__":
