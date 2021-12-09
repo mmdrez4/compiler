@@ -17,7 +17,7 @@ class State(Enum):
 # DEFINE REGEX FOR EACH STATE
 num_regex = re.compile(r'[0-9]+')
 ID_regex = re.compile(r'[A-Za-z][A-Za-z0-9]*')
-keyword_regex = re.compile(r'if|else|void|int|repeat|break|until|return')
+keyword_regex = re.compile(r'if|else|void|int|repeat|break|until|return|endif')
 symbol_regex = re.compile(r';|:|,|\[|]|\(|\)|{|\}|\+|-|\*|=|<|==')
 comment_regex = re.compile(r'/\*.*\*/ | ///[^\n\r]+?(?:\*\)|[\n\r])')
 space_regex = re.compile(r'\n|\r|\t|\v|\f|\s')
