@@ -116,7 +116,7 @@ def error_handling(type, final_lexeme, line_pointer):
 
 
 # GET TOKENS!!
-def get_next_token():
+def get_token():
     global character, current_state, can_read, lexeme, pointer
 
     if not character:
@@ -283,9 +283,8 @@ def get_next_token():
                     error_handling("input", lexeme, pointer)
 
 
-# MAIN FUNCTION
-if __name__ == "__main__":
-
+def get_next_token():
+    global character, pointer
     # WHILE LOOP FOR READING THE FILE CHARACTER BY CHARACTER
     while True:
         if can_read:
@@ -293,25 +292,33 @@ if __name__ == "__main__":
 
         # LAST UPDATE FOR TOKENS WHEN THERE IS NO CHARACTER ANYMORE
         if not character:
-            (token_type, token_lexeme) = get_next_token()
+            (token_type, token_lexeme) = get_token()
             if token_type != "START":
                 add_tokens_to_file(token_type, token_lexeme)
+                return token_type, token_lexeme
             break
 
         # GO TO NEWLINE AND UPDATE THE LAST TOKEN
         if character == "\n":
-            (token_type, token_lexeme) = get_next_token()
+            (token_type, token_lexeme) = get_token()
             if token_type != "START":
                 add_tokens_to_file(token_type, token_lexeme)
+                return token_type, token_lexeme
             pointer += 1
             continue
 
         # CALL get_next_token METHOD FOR RECOGNIZING ALL THE TOKENS
-        output = get_next_token()
+        output = get_token()
         if output is not None:
             (token_type, token_lexeme) = output[0], output[1]
             if len(token_type) > 0 and len(token_lexeme) > 0:
                 add_tokens_to_file(token_type, token_lexeme)
+                return token_type, token_lexeme
+
+
+# MAIN FUNCTION
+if __name__ == "__main__":
+
 
     tokens_file.write('\n')
     # WRITE SYMBOLS NAMES IN THE SYMBOL_FILE AND ADD IDENTIFIERS TO THAT
@@ -321,5 +328,3 @@ if __name__ == "__main__":
     for identifier in identifiers:
         symbols_file.write(str(j) + '.\t' + identifier + "\n")
         j += 1
-
-
