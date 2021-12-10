@@ -57,103 +57,117 @@ class Transition(Enum):
 
 
 first_of_non_terminals = {
-    "Program": ["int"],
-    "Declaration-list": "int",
-    "Declaration": "int",
-    "Declaration-initial": "int",
-    "Declaration-prime": ";",
-    "Var-declaration-prime": ";",
-    "Fun-declaration-prime": "(void) {int ID;}",
-    "Type-specifier": "int",
-    "Params": "void",
-    "Param-list": ", int ID",
-    "Param": "int ID",
-    "Param-prime": "[]",
-    "Compound-stmt": "{int ID;}",
-    "Statement-list": ";",
-    "Statement": ";",
-    "Expression-stmt": ";",
-    "Selection-stmt": "if (NUM); else;",
-    "Else-stmt": "if (NUM); else;",
-    "Iteration-stmt": "while (NUM);",
-    "Return-stmt": "return;",
-    "Return-stmt-prime": ";",
-    "Expression": ";",
-    "B": r'=|[',
-    "H": "NUM",
-    "Simple-expression-zegond": "NUM",
-    "Simple-expression-prime": "()",
-    "C": "< NUM",
-    "Relop": "<",
-    "Additive-expression": "NUM",
-    "Additive-expression-prime": "()",
-    "Additive-expression-zegond": "NUM",
-    "D": "+ NUM",
-    "Addop": "+",
-    "Term": "NUM",
-    "Term-prime": "()",
-    "Term-zegond": "NUM",
-    "G": "* NUM",
-    "Factor": "NUM",
-    "Var-call-prime": "()",
-    "Var-prime": "[NUM]",
-    "Factor-prime": "()",
-    "Factor-zegond": "NUM",
-    "Args": "NUM",
-    "Arg-list": "NUM",
-    "Arg-list-prime": ", NUM",
+    'Program': ['$', 'int', 'void'],
+    'Declaration-list': ['EPSILON', 'int', 'void'],
+    'Declaration': ['int', 'void'],
+    'Declaration-initial': ['int', 'void'],
+    'Declaration-prime': ['(', ';', '['],
+    'Var-declaration-prime': [';', '['],
+    'Fun-declaration-prime': ['('],
+    'Type-specifier': ['int', 'void'],
+    'Params': ['int', 'void'],
+    'Param-list': [',', 'EPSILON'],
+    'Param': ['int', 'void'],
+    'Param-prime': ['[', 'EPSILON'],
+    'Compound-stmt': ['{'],
+    'Statement-list': ['EPSILON', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM'],
+    'Statement': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM'],
+    'Expression-stmt': ['break', ';', 'ID', '(', 'NUM'],
+    'Selection-stmt': ['if'],
+    'Else-stmt': ['endif', 'else'],
+    'Iteration-stmt': ['repeat'],
+    'Return-stmt': ['return'],
+    'Return-stmt-prime': [';', 'ID', '(', 'NUM'],
+    'Expression': ['ID', '(', 'NUM'],
+    'B': ['=', '[', '(', '*', '+', '-', '<', '==', 'EPSILON'],
+    'H': ['=', '*', 'EPSILON', '+', '-', '<', '=='],
+    'Simple-expression-zegond': ['(', 'NUM'],
+    'Simple-expression-prime': ['(', '*', '+', '-', '<', '==', 'EPSILON'],
+    'C': ['EPSILON', '<', '=='],
+    'Relop': ['<', '=='],
+    'Additive-expression': ['(', 'ID', 'NUM'],
+    'Additive-expression-prime': ['(', '*', '+', '-', 'EPSILON'],
+    'Additive-expression-zegond': ['(', 'NUM'],
+    'D': ['EPSILON', '+', '-'],
+    'Addop': ['+', '-'],
+    'Term': ['(', 'ID', 'NUM'],
+    'Term-prime': ['(', '*', 'EPSILON'],
+    'Term-zegond': ['(', 'NUM'],
+    'G': ['*', 'EPSILON'],
+    'Factor': ['(', 'ID', 'NUM'],
+    'Var-call-prime': ['(', '[', 'EPSILON'],
+    'Var-prime': ['[', 'EPSILON'],
+    'Factor-prime': ['(', 'EPSILON'],
+    'Factor-zegond': ['(', 'NUM'],
+    'Args': ['EPSILON', 'ID', '(', 'NUM'],
+    'Arg-list': ['ID', '(', 'NUM'],
+    'Arg-list-prime': [',', 'EPSILON']
 }
 
 follow_of_non_terminals = {
-    "Program": ["int"],
-    "Declaration-list": "int",
-    "Declaration": "int",
-    "Declaration-initial": "int",
-    "Declaration-prime": ";",
-    "Var-declaration-prime": ";",
-    "Fun-declaration-prime": "(void) {int ID;}",
-    "Type-specifier": "int",
-    "Params": "void",
-    "Param-list": ", int ID",
-    "Param": "int ID",
-    "Param-prime": "[]",
-    "Compound-stmt": "{int ID;}",
-    "Statement-list": ";",
-    "Statement": ";",
-    "Expression-stmt": ";",
-    "Selection-stmt": "if (NUM); else;",
-    "Else-stmt": "if (NUM); else;",
-    "Iteration-stmt": "while (NUM);",
-    "Return-stmt": "return;",
-    "Return-stmt-prime": ";",
-    "Expression": ";",
-    "B": r'=|[',
-    "H": "NUM",
-    "Simple-expression-zegond": "NUM",
-    "Simple-expression-prime": "()",
-    "C": "< NUM",
-    "Relop": "<",
-    "Additive-expression": "NUM",
-    "Additive-expression-prime": "()",
-    "Additive-expression-zegond": "NUM",
-    "D": "+ NUM",
-    "Addop": "+",
-    "Term": "NUM",
-    "Term-prime": "()",
-    "Term-zegond": "NUM",
-    "G": "* NUM",
-    "Factor": "NUM",
-    "Var-call-prime": "()",
-    "Var-prime": "[NUM]",
-    "Factor-prime": "()",
-    "Factor-zegond": "NUM",
-    "Args": "NUM",
-    "Arg-list": "NUM",
-    "Arg-list-prime": ", NUM",
+    'Program': [],
+    'Declaration-list': ['$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}'],
+    'Declaration': ['int', 'void', '$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}'],
+    'Declaration-initial': ['(', ';', '[', ',', ')'],
+    'Declaration-prime': ['int', 'void', '$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}'],
+    'Var-declaration-prime': ['int', 'void', '$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}'],
+    'Fun-declaration-prime': ['int', 'void', '$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}'],
+    'Type-specifier': ['ID'],
+    'Params': [')'],
+    'Param-list': [')'],
+    'Param': [',', ')'],
+    'Param-prime': [',', ')'],
+    'Compound-stmt': ['int', 'void', '$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif',
+                      'else', 'until'],
+    'Statement-list': ['}'],
+    'Statement': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
+    'Expression-stmt': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
+    'Selection-stmt': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
+    'Else-stmt': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
+    'Iteration-stmt': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
+    'Return-stmt': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
+    'Return-stmt-prime': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
+    'Expression': [';', ')', ']', ','],
+    'B': [';', ')', ']', ','],
+    'H': [';', ')', ']', ','],
+    'Simple-expression-zegond': [';', ')', ']', ','],
+    'Simple-expression-prime': [';', ')', ']', ','],
+    'C': [';', ')', ']', ','],
+    'Relop': ['(', 'ID', 'NUM'],
+    'Additive-expression': [';', ')', ']', ','],
+    'Additive-expression-prime': ['<', '==', ';', ')', ']', ','],
+    'Additive-expression-zegond': ['<', '==', ';', ')', ']', ','],
+    'D': ['<', '==', ';', ')', ']', ','],
+    'Addop': ['(', 'ID', 'NUM'],
+    'Term': ['+', '-', ';', ')', '<', '==', ']', ','],
+    'Term-prime': ['+', '-', '<', '==', ';', ')', ']', ','],
+    'Term-zegond': ['+', '-', '<', '==', ';', ')', ']', ','],
+    'G': ['+', '-', '<', '==', ';', ')', ']', ','],
+    'Factor': ['*', '+', '-', ';', ')', '<', '==', ']', ','],
+    'Var-call-prime': ['*', '+', '-', ';', ')', '<', '==', ']', ','],
+    'Var-prime': ['*', '+', '-', ';', ')', '<', '==', ']', ','],
+    'Factor-prime': ['*', '+', '-', '<', '==', ';', ')', ']', ','],
+    'Factor-zegond': ['*', '+', '-', '<', '==', ';', ')', ']', ','],
+    'Args': [')'],
+    'Arg-list': [')'],
+    'Arg-list-prime': [')']
 }
+
 
 parse_tree_file = open('parse_tree.txt', 'w')
 syntax_errors_file = open('syntax_errors.txt', 'w')
+pointer = 1
+syntax_file_pointer = 0
+
+
+def numbering_syntax_error_lines():
+    global syntax_file_pointer
+    if pointer != syntax_file_pointer:
+        if syntax_file_pointer != 0:
+            syntax_errors_file.write("\n")
+        syntax_errors_file.write("#" + str(pointer) + " : ")
+        syntax_file_pointer = pointer
+
 
 #
 # class Parser(object):
@@ -287,13 +301,30 @@ syntax_errors_file = open('syntax_errors.txt', 'w')
 #             self._clean_up_tree()
 #         self.code_generator.code_gen("FINISH_PROGRAM", None)
 
+
+def add_syntax_error(error_type, lexeme, non_terminal):
+    line_number = 0
+    if error_type == "follow":
+        syntax_errors_file.write("illegal " + lexeme + " found on line" + line_number)
+    else:
+        syntax_errors_file.write("missing " + non_terminal + " on line" + line_number)
+
+
 current_state = Transition.Program
 current_num = 0
+can_get_token = True
+syntax_error = False
 
 
 def parser(token):
-    global current_state, current_num
+    global current_state, current_num, can_get_token
     token_type, lexeme = token
+
+    if token_type == "$":
+        if syntax_error:
+            syntax_errors_file.write('\n')
+        else:
+            syntax_errors_file.write("There is no syntax error.")
 
     if current_state == Transition.Program:
         if current_num == 0:
@@ -589,10 +620,13 @@ def parser(token):
                 pass
 
 
-
 if __name__ == "__main__":
     input_file = open('input.txt', 'r')
-    parser(input_file)
+    while True:
+        # if can_get_token:
+        #     token_type, lexeme = token
+        parser(input_file)
+
     # parser = Parser(input_path)
     # parser.parse()
     # parser.save_parse_tree()
