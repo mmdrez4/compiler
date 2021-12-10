@@ -202,7 +202,6 @@ follow_of_non_terminals = {
     'Arg-list-prime': [')']
 }
 
-
 parse_tree_file = open('parse_tree.txt', 'w')
 syntax_errors_file = open('syntax_errors.txt', 'w')
 pointer = 1
@@ -239,6 +238,7 @@ root = Node('Program')
 
 # MAIN PART // TODO
 token = scanner.get_next_token()
+
 
 def procedure_is_terminal(procedure):
     return not (procedure in non_terminals.keys())
@@ -904,7 +904,6 @@ def expression_procedure():
     if token_matches_branch(non_terminals[procedure][0]):
         child = simple_expression_zegond_procedure()
         child.parent = root
-
         return root
     if token_matches_branch(non_terminals[procedure][1]):
         if token.type == 'ID':
@@ -926,13 +925,99 @@ def expression_procedure():
 
 def b_procedure():
     global token
+
     procedure = 'B'
     root = Node(procedure)
+
+    if token_matches_branch(non_terminals[procedure][0]):
+        if token.value == '=':
+            child = Node(f"(ID, {token.value})", parent=root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = expression_procedure()
+        child.parent = root
+        return root
+
+    if token_matches_branch(non_terminals[procedure][1]):
+        if token.type == '[':
+            child = Node(f"(ID, {token.value})", parent=root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = expression_procedure()
+        child.parent = root
+
+        if token.value == ']':
+            child = Node('(SYMBOL, ])', parent=root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = h_procedure()
+        child.parent = root
+
+        return root
+
+    if token_matches_branch(non_terminals[procedure][2]):
+        child = simple_expression_prime_procedure()
+        child.parent = root
+        return root
+
+    if token in follow_of_non_terminals[procedure]:
+        pass
+    else:
+        pass
+
+
+def h_procedure():
+    global token
+
+    procedure = 'H'
+    root = Node(procedure)
+
+    if token_matches_branch(non_terminals[procedure][0]):
+        if token.value == '=':
+            child = Node(f"(ID, {token.value})", parent=root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = expression_procedure()
+        child.parent = root
+        return root
+
+    if token_matches_branch(non_terminals[procedure][1]):
+        child = g_procedure()
+        child.parent = root
+
+        child = d_procedure()
+        child.parent = root
+
+        child = c_procedure()
+        child.parent = root
+
+        return root
+
+    if token in follow_of_non_terminals[procedure]:
+        pass
+    else:
+        pass
+
+def simple_expression_zegond():
+    if token_matches_branch(non_terminals[procedure][1]):
+        child = g_procedure()
+        child.parent = root
+
+
 
 # TODO
 
 
 scanner.close_file()
+
 
 def parser(token):
     global current_state, current_num, can_get_token, root
