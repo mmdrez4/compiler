@@ -624,7 +624,7 @@ while True:
             root = Node(transition_state, root)
 
         elif is_in_follow(token_type, token_lexeme, transition_state):
-            # missing procedure error. move state without changing the token
+            # missing method error. move state without changing the token
             if 'e' in first_of_non_terminals[transition_state]:
                 states.append(current_transition)
                 current_transition = Transition(transition_state)
@@ -633,7 +633,7 @@ while True:
                 add_syntax_error("missing", token_lexeme, transition_state)
                 move_to_next_state()
 
-        # illegal procedure error. don't move state and change token
+        # illegal method error. don't move state and change token
         elif token_lexeme == '$':
             add_syntax_error("Unexpected EOF", token_lexeme, transition_state)
             break

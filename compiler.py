@@ -488,15 +488,15 @@ def is_in_follow(token_t, token_l, transition):
 
 
 class Transition:
-    def __init__(self, procedure):
-        self.procedure = procedure
-        self.branch = self.get_branch()
+    def __init__(self, method):
+        self.method = method
+        self.child = self.get_child()
         self.state_num = 0
 
-    def get_branch(self):
-        for i in range(len(non_terminals[self.procedure])):
-            for j in range(len(non_terminals[self.procedure][i])):
-                grammar = non_terminals[self.procedure][i][j]
+    def get_child(self):
+        for i in range(len(non_terminals[self.method])):
+            for j in range(len(non_terminals[self.method][i])):
+                grammar = non_terminals[self.method][i][j]
                 if grammar == 'e':
                     return i
                 if grammar not in non_terminals:
@@ -509,11 +509,11 @@ class Transition:
                         return i
                     elif 'e' not in first_of_non_terminals[grammar]:
                         break
-                    elif j == len(non_terminals[self.procedure][i]) - 1:
+                    elif j == len(non_terminals[self.method][i]) - 1:
                         return i
 
     def can_go_to_next_sate(self):
-        if self.state_num < len(non_terminals[self.procedure][self.branch]) - 1:
+        if self.state_num < len(non_terminals[self.method][self.child]) - 1:
             self.state_num += 1
             return True
         else:
@@ -537,7 +537,7 @@ def move_to_next_state():
 
 # MAIN FUNCTION
 while True:
-    transition_state = non_terminals[current_transition.procedure][current_transition.branch][
+    transition_state = non_terminals[current_transition.method][current_transition.child][
         current_transition.state_num]
     if transition_state == 'e':
         Node('epsilon', root)
