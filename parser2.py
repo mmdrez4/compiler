@@ -222,11 +222,14 @@ def add_syntax_error(error_type, lexeme, non_terminal):
     global syntax_error
     syntax_error = True
     numbering_syntax_error_lines()
-    line_number = 0
     if error_type == "missing":
         syntax_errors_file.write("syntax error, missing " + non_terminal)
-    elif error_type == "illegal":
-        syntax_errors_file.write("missing " + non_terminal + " on line" + line_number)
+    elif error_type == "illegal type":
+        syntax_errors_file.write("syntax error, illegal " + non_terminal)
+    elif error_type == "illegal lexeme":
+        syntax_errors_file.write("syntax error, illegal " + lexeme)
+    elif error_type == "Unexpected EOF":
+        syntax_errors_file.write("syntax error, Unexpected EOF")
 
 
 def is_terminal(phrase):
@@ -325,22 +328,23 @@ while True:
                     child = Node(current_state, parent=root)
                     root = child
                 else:
-                    syntax_errors.append(f"#{token.line} : syntax error, missing {current_state}")
+                    add_syntax_error("missing", token_lexeme, current_state)
                     move_to_next_state()
 
             else:
                 # illegal procedure error. don't move state and change token
                 if token.value == '$':
-                    syntax_errors.append(f"#{token.line} : syntax error, Unexpected EOF")
+                    add_syntax_error("Unexpected EOF", token_lexeme, current_state)
                     break
                 else:
-                    syntax_errors.append(
-                        f"#{token.line} : syntax error, illegal {token.type if token.type == 'ID' or token.type == 'NUM' else token.value}")
+                    if token_type == 'ID' or token_type == "NUM":
+                        add_syntax_error("illegal type", token_lexeme, current_state)
+                    else:
+                        add_syntax_error("illegal lexeme", token_lexeme, current_state)
                     token = scanner.get_next_token()
 
 if not syntax_error:
     syntax_errors_file.write("There is no syntax error.")
-
 
 with open('parse_tree.txt', 'w', encoding="utf-8") as tree:
     while root.parent:
@@ -349,4 +353,3 @@ with open('parse_tree.txt', 'w', encoding="utf-8") as tree:
     for pre, fill, node in RenderTree(root):
         tree.write("%s%s" % (pre, node.name) + "\n")
 
-scanner.close_file()
