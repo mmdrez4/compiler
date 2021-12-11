@@ -513,7 +513,7 @@ class Transition_Diagram(Enum):
     Arg_list_prime = 44
 
 
-# parse_tree_file = open('parse_tree.txt', 'w')
+parse_tree_file = open('parse_tree.txt', 'w')
 syntax_errors_file = open('syntax_errors.txt', 'w')
 syntax_file_pointer = 0
 
@@ -544,8 +544,22 @@ def add_syntax_error(error_type, lexeme, non_terminal):
         syntax_errors_file.write("syntax error, Unexpected EOF")
 
 
-STATE_STACK = []
-token = None
+def is_in_first(token_t, token_l, transition):
+    first = first_of_non_terminals[transition]
+    if token_t in first:
+        return True
+    if token_l in first:
+        return True
+    return False
+
+
+def is_in_follow(token_t, token_l, transition):
+    follow = follow_of_non_terminals[transition]
+    if token_t in follow:
+        return True
+    if token_l in follow:
+        return True
+    return False
 
 
 class Transition:
@@ -557,24 +571,21 @@ class Transition:
     def get_branch(self):
         for i in range(len(non_terminals[self.procedure])):
             for j in range(len(non_terminals[self.procedure][i])):
-                komaki = non_terminals[self.procedure][i][j]
-                if komaki == 'e':
+                grammar = non_terminals[self.procedure][i][j]
+                if grammar == 'e':
                     return i
-                if komaki not in non_terminals:
-                    if token_lexeme == komaki or token_type == komaki:
+                if grammar not in non_terminals:
+                    if token_lexeme == grammar or token_type == grammar:
                         return i
                     else:
                         break
                 else:
-                    if token_lexeme in first_of_non_terminals[komaki] or token_type in first_of_non_terminals[komaki]:
+                    if is_in_first(token_type, token_lexeme, grammar):
                         return i
-                    elif 'e' not in first_of_non_terminals[komaki]:
+                    elif 'e' not in first_of_non_terminals[grammar]:
                         break
                     elif j == len(non_terminals[self.procedure][i]) - 1:
                         return i
-
-    def get_value(self):
-        return non_terminals[self.procedure][self.branch][self.state_num]
 
     def move_forward(self):
         if self.state_num < len(non_terminals[self.procedure][self.branch]) - 1:
@@ -584,87 +595,83 @@ class Transition:
 
 
 token_type, token_lexeme = get_next_token()
-state = Transition('Program')
-root = Node('Program')
+current_transition = Transition('Program')
+program = Node('Program')
+root = program
+states = []
 
 
 def move_to_next_state():
-    global state
-    global root
-
-    while not state.move_forward():
-        if STATE_STACK:
-            state = STATE_STACK.pop()
+    global current_transition, root
+    while not current_transition.move_forward():
+        if states:
+            current_transition = states.pop()
             root = root.parent
 
 
 # MAIN FUNCTION
 while True:
-    current_transition = non_terminals[state.procedure][state.branch][state.state_num]
-    if current_transition == 'e':
+    transition_state = non_terminals[current_transition.procedure][current_transition.branch][
+        current_transition.state_num]
+    if transition_state == 'e':
         Node('epsilon', root)
         move_to_next_state()
 
-    elif current_transition not in non_terminals:
-        if token_lexeme == current_transition or token_type == current_transition:
-            # matches. move both state and token
-            if token_lexeme == '$':
-                Node('$', root)
-                break
-            Node("(" + token_type + ", " + token_lexeme + ")", root)
-            token_type, token_lexeme = get_next_token()
-            move_to_next_state()
-        else:
-            # missing token. don't change token and move state
-            add_syntax_error("missing", token_lexeme, current_transition)
-            move_to_next_state()
+    elif transition_state in non_terminals:
+        if is_in_first(token_type, token_lexeme, transition_state):
+            states.append(current_transition)
+            current_transition = Transition(transition_state)
+            root = Node(transition_state, root)
 
-    else:  # non-terminal state
-        if token_lexeme in first_of_non_terminals[current_transition] \
-                or token_type in first_of_non_terminals[current_transition]:
-            STATE_STACK.append(state)
-            state = Transition(current_transition)
-            root = Node(current_transition, root)
-
-        else:
-            if token_lexeme in follow_of_non_terminals[current_transition] or \
-                    token_type in follow_of_non_terminals[current_transition]:
-                # missing procedure error. move state without changing the token
-                if 'e' in first_of_non_terminals[current_transition]:
-                    STATE_STACK.append(state)
-                    state = Transition(current_transition)
-                    root = Node(current_transition, root)
-                else:
-                    add_syntax_error("missing", token_lexeme, current_transition)
-                    move_to_next_state()
-
+        elif is_in_follow(token_type, token_lexeme, transition_state):
+            # missing procedure error. move state without changing the token
+            if 'e' in first_of_non_terminals[transition_state]:
+                states.append(current_transition)
+                current_transition = Transition(transition_state)
+                root = Node(transition_state, root)
             else:
-                # illegal procedure error. don't move state and change token
-                if token_lexeme == '$':
-                    add_syntax_error("Unexpected EOF", token_lexeme, current_transition)
-                    break
-                else:
-                    if token_type == 'ID' or token_type == "NUM":
-                        add_syntax_error("illegal type", token_lexeme, current_transition)
-                    else:
-                        add_syntax_error("illegal lexeme", token_lexeme, current_transition)
-                    token_type, token_lexeme = get_next_token()
+                add_syntax_error("missing", token_lexeme, transition_state)
+                move_to_next_state()
+
+        # illegal procedure error. don't move state and change token
+        elif token_lexeme == '$':
+            add_syntax_error("Unexpected EOF", token_lexeme, transition_state)
+            break
+        elif token_type == 'ID' or token_type == "NUM":
+            add_syntax_error("illegal type", token_lexeme, transition_state)
+        else:
+            add_syntax_error("illegal lexeme", token_lexeme, transition_state)
+        token_type, token_lexeme = get_next_token()
+
+    elif token_lexeme == transition_state or token_type == transition_state:
+        # matches. move both state and token
+        if token_lexeme == '$':
+            Node('$', root)
+            break
+        Node("(" + token_type + ", " + token_lexeme + ")", root)
+        token_type, token_lexeme = get_next_token()
+        move_to_next_state()
+    else:
+        # missing token. don't change token and move state
+        add_syntax_error("missing", token_lexeme, transition_state)
+        move_to_next_state()
 
 if not syntax_error:
     syntax_errors_file.write("There is no syntax error.")
 
-with open('parse_tree.txt', 'w', encoding="utf-8") as tree:
-    while root.parent:
-        root = root.parent
-
-    for pre, fill, node in RenderTree(root):
-        tree.write("%s%s" % (pre, node.name) + "\n")
+# DRAW THE PARSE TREE
+counter = 0
+for pre, fill, node in RenderTree(program):
+    if counter != 0:
+        parse_tree_file.write("\n")
+    counter += 1
+    parse_tree_file.write("%s%s" % (pre, node.name))
 
 tokens_file.write('\n')
 # WRITE SYMBOLS NAMES IN THE SYMBOL_FILE AND ADD IDENTIFIERS TO THAT
 symbols_file.writelines(["1.\tif", "\n2.\telse", "\n3.\tvoid", "\n4.\tint", "\n5.\trepeat",
                          "\n6.\tbreak", "\n7.\tuntil", "\n8.\treturn\n"])
-j = 9
+counter = 9
 for identifier in identifiers:
-    symbols_file.write(str(j) + '.\t' + identifier + "\n")
-    j += 1
+    symbols_file.write(str(counter) + '.\t' + identifier + "\n")
+    counter += 1

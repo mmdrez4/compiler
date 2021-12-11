@@ -6,9 +6,6 @@
 6.	break
 7.	until
 8.	return
-9.	func
-10.	x
-11.	a
-12.	output
-13.	main
-14.	i
+9.	main
+10.	prod
+11.	i

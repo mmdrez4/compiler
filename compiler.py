@@ -83,102 +83,27 @@ non_terminals = {
     'Arg-list-prime': [[',', 'Expression', 'Arg-list-prime'], ['e']]
 }
 
-first_of_non_terminals = {
-    'Program': ['$', 'int', 'void'],
-    'Declaration-list': ['e', 'int', 'void'],
-    'Declaration': ['int', 'void'],
-    'Declaration-initial': ['int', 'void'],
-    'Declaration-prime': ['(', ';', '['],
-    'Var-declaration-prime': [';', '['],
-    'Fun-declaration-prime': ['('],
-    'Type-specifier': ['int', 'void'],
-    'Params': ['int', 'void'],
-    'Param-list': [',', 'e'],
-    'Param': ['int', 'void'],
-    'Param-prime': ['[', 'e'],
-    'Compound-stmt': ['{'],
-    'Statement-list': ['e', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM'],
-    'Statement': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM'],
-    'Expression-stmt': ['break', ';', 'ID', '(', 'NUM'],
-    'Selection-stmt': ['if'],
-    'Else-stmt': ['endif', 'else'],
-    'Iteration-stmt': ['repeat'],
-    'Return-stmt': ['return'],
-    'Return-stmt-prime': [';', 'ID', '(', 'NUM'],
-    'Expression': ['ID', '(', 'NUM'],
-    'B': ['=', '[', '(', '*', '+', '-', '<', '==', 'e'],
-    'H': ['=', '*', 'e', '+', '-', '<', '=='],
-    'Simple-expression-zegond': ['(', 'NUM'],
-    'Simple-expression-prime': ['(', '*', '+', '-', '<', '==', 'e'],
-    'C': ['e', '<', '=='],
-    'Relop': ['<', '=='],
-    'Additive-expression': ['(', 'ID', 'NUM'],
-    'Additive-expression-prime': ['(', '*', '+', '-', 'e'],
-    'Additive-expression-zegond': ['(', 'NUM'],
-    'D': ['e', '+', '-'],
-    'Addop': ['+', '-'],
-    'Term': ['(', 'ID', 'NUM'],
-    'Term-prime': ['(', '*', 'e'],
-    'Term-zegond': ['(', 'NUM'],
-    'G': ['*', 'e'],
-    'Factor': ['(', 'ID', 'NUM'],
-    'Var-call-prime': ['(', '[', 'e'],
-    'Var-prime': ['[', 'e'],
-    'Factor-prime': ['(', 'e'],
-    'Factor-zegond': ['(', 'NUM'],
-    'Args': ['e', 'ID', '(', 'NUM'],
-    'Arg-list': ['ID', '(', 'NUM'],
-    'Arg-list-prime': [',', 'e']
-}
+first_of_non_terminals = {}
+with open('first_file.txt', 'r') as f:
+    lines = f.readlines()
+    for line in lines:
+        split_line = line.split("->")
+        non_terminal = split_line[0]
+        first_of_non_terminals[non_terminal] = []
+        firsts = split_line[1].split("|")
+        for item in firsts:
+            first_of_non_terminals[non_terminal].append(item.strip())
 
-follow_of_non_terminals = {
-    'Program': [],
-    'Declaration-list': ['$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}'],
-    'Declaration': ['int', 'void', '$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}'],
-    'Declaration-initial': ['(', ';', '[', ',', ')'],
-    'Declaration-prime': ['int', 'void', '$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}'],
-    'Var-declaration-prime': ['int', 'void', '$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}'],
-    'Fun-declaration-prime': ['int', 'void', '$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}'],
-    'Type-specifier': ['ID'],
-    'Params': [')'],
-    'Param-list': [')'],
-    'Param': [',', ')'],
-    'Param-prime': [',', ')'],
-    'Compound-stmt': ['int', 'void', '$', '{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif',
-                      'else', 'until'],
-    'Statement-list': ['}'],
-    'Statement': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
-    'Expression-stmt': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
-    'Selection-stmt': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
-    'Else-stmt': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
-    'Iteration-stmt': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
-    'Return-stmt': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
-    'Return-stmt-prime': ['{', 'break', ';', 'if', 'repeat', 'return', 'ID', '(', 'NUM', '}', 'endif', 'else', 'until'],
-    'Expression': [';', ')', ']', ','],
-    'B': [';', ')', ']', ','],
-    'H': [';', ')', ']', ','],
-    'Simple-expression-zegond': [';', ')', ']', ','],
-    'Simple-expression-prime': [';', ')', ']', ','],
-    'C': [';', ')', ']', ','],
-    'Relop': ['(', 'ID', 'NUM'],
-    'Additive-expression': [';', ')', ']', ','],
-    'Additive-expression-prime': ['<', '==', ';', ')', ']', ','],
-    'Additive-expression-zegond': ['<', '==', ';', ')', ']', ','],
-    'D': ['<', '==', ';', ')', ']', ','],
-    'Addop': ['(', 'ID', 'NUM'],
-    'Term': ['+', '-', ';', ')', '<', '==', ']', ','],
-    'Term-prime': ['+', '-', '<', '==', ';', ')', ']', ','],
-    'Term-zegond': ['+', '-', '<', '==', ';', ')', ']', ','],
-    'G': ['+', '-', '<', '==', ';', ')', ']', ','],
-    'Factor': ['*', '+', '-', ';', ')', '<', '==', ']', ','],
-    'Var-call-prime': ['*', '+', '-', ';', ')', '<', '==', ']', ','],
-    'Var-prime': ['*', '+', '-', ';', ')', '<', '==', ']', ','],
-    'Factor-prime': ['*', '+', '-', '<', '==', ';', ')', ']', ','],
-    'Factor-zegond': ['*', '+', '-', '<', '==', ';', ')', ']', ','],
-    'Args': [')'],
-    'Arg-list': [')'],
-    'Arg-list-prime': [')']
-}
+follow_of_non_terminals = {}
+with open('follow_file.txt', 'r') as f:
+    lines = f.readlines()
+    for line in lines:
+        split_line = line.split("->")
+        non_terminal = split_line[0]
+        follow_of_non_terminals[non_terminal] = []
+        firsts = split_line[1].split("|")
+        for item in firsts:
+            follow_of_non_terminals[non_terminal].append(item.strip())
 
 # DEFINE IMPORTANT VARIABLES
 current_state = State.START
@@ -454,7 +379,7 @@ def get_next_token():
             pointer += 1
             continue
 
-        # CALL get_next_token METHOD FOR RECOGNIZING ALL THE TOKENS
+        # CALL get_token METHOD FOR RECOGNIZING ALL THE TOKENS
         output = get_token()
         if output is not None:
             token_t, token_l = output[0], output[1]
@@ -515,19 +440,19 @@ class Transition_Diagram(Enum):
 
 parse_tree_file = open('parse_tree.txt', 'w')
 syntax_errors_file = open('syntax_errors.txt', 'w')
-syntax_file_pointer = 0
+syntax_start_file_pointer = 0
 
 can_get_token = True
 syntax_error = False
 
 
 def numbering_syntax_error_lines():
-    global syntax_file_pointer
-    if pointer != syntax_file_pointer:
-        if syntax_file_pointer != 0:
-            syntax_errors_file.write("\n")
-        syntax_errors_file.write("#" + str(pointer) + " : ")
-        syntax_file_pointer = pointer
+    global syntax_start_file_pointer
+    if syntax_start_file_pointer == 0:
+        syntax_start_file_pointer += 1
+    else:
+        syntax_errors_file.write("\n")
+    syntax_errors_file.write("#" + str(pointer) + " : ")
 
 
 def add_syntax_error(error_type, lexeme, non_terminal):
@@ -537,7 +462,7 @@ def add_syntax_error(error_type, lexeme, non_terminal):
     if error_type == "missing":
         syntax_errors_file.write("syntax error, missing " + non_terminal)
     elif error_type == "illegal type":
-        syntax_errors_file.write("syntax error, illegal " + non_terminal)
+        syntax_errors_file.write("syntax error, illegal " + lexeme)
     elif error_type == "illegal lexeme":
         syntax_errors_file.write("syntax error, illegal " + lexeme)
     elif error_type == "Unexpected EOF":
@@ -587,11 +512,12 @@ class Transition:
                     elif j == len(non_terminals[self.procedure][i]) - 1:
                         return i
 
-    def move_forward(self):
+    def can_go_to_next_sate(self):
         if self.state_num < len(non_terminals[self.procedure][self.branch]) - 1:
             self.state_num += 1
             return True
-        return False
+        else:
+            return False
 
 
 token_type, token_lexeme = get_next_token()
@@ -603,7 +529,7 @@ states = []
 
 def move_to_next_state():
     global current_transition, root
-    while not current_transition.move_forward():
+    while not current_transition.can_go_to_next_sate():
         if states:
             current_transition = states.pop()
             root = root.parent
@@ -624,7 +550,6 @@ while True:
             root = Node(transition_state, root)
 
         elif is_in_follow(token_type, token_lexeme, transition_state):
-            # missing procedure error. move state without changing the token
             if 'e' in first_of_non_terminals[transition_state]:
                 states.append(current_transition)
                 current_transition = Transition(transition_state)
@@ -633,18 +558,17 @@ while True:
                 add_syntax_error("missing", token_lexeme, transition_state)
                 move_to_next_state()
 
-        # illegal procedure error. don't move state and change token
         elif token_lexeme == '$':
             add_syntax_error("Unexpected EOF", token_lexeme, transition_state)
             break
         elif token_type == 'ID' or token_type == "NUM":
-            add_syntax_error("illegal type", token_lexeme, transition_state)
+            add_syntax_error("illegal type", token_type, transition_state)
+            token_type, token_lexeme = get_next_token()
         else:
             add_syntax_error("illegal lexeme", token_lexeme, transition_state)
-        token_type, token_lexeme = get_next_token()
+            token_type, token_lexeme = get_next_token()
 
     elif token_lexeme == transition_state or token_type == transition_state:
-        # matches. move both state and token
         if token_lexeme == '$':
             Node('$', root)
             break
@@ -652,7 +576,6 @@ while True:
         token_type, token_lexeme = get_next_token()
         move_to_next_state()
     else:
-        # missing token. don't change token and move state
         add_syntax_error("missing", token_lexeme, transition_state)
         move_to_next_state()
 
